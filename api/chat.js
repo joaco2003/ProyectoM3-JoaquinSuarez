@@ -1,0 +1,78 @@
+// /api/chat.js
+// Vercel Serverless Function: actúa como proxy seguro entre el cliente y la
+// API de Google Gemini. La API key vive solo en variables de entorno del
+// servidor y nunca se expone al navegador.
+
+import { CHARACTERS } from "../src/js/characters.js";
+
+const DEFAULT_MODEL = "gemini-2.0-flash";
+
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
+    return res.status(405).json({ error: "Método no permitido. Usa POST." });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    // Nunca revelamos detalles internos, solo que falta configuración.
+    return res.status(500).json({ error: "El servidor no tiene configurada la API key de Gemini." });
+  }
+
+  const { characterId, message, history } = req.body || {};
+
+  if (!characterId || typeof message !== "string" || !message.trim()) {
+    return res.status(400).json({ error: "Faltan campos: characterId y message son requeridos." });
+  }
+
+  const character = CHARACTERS.find((c) => c.id === characterId);
+  if (!character) {
+    return res.status(400).json({ error: "Personaje desconocido." });
+  }
+
+  const model = process.env.GEMINI_MODEL || DEFAULT_MODEL;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const contents = (Array.isArray(history) ? history : []).map((m) => ({
+    role: m.role === "character" ? "model" : "user",
+    parts: [{ text: String(m.text || "") }],
+  }));
+  contents.push({ role: "user", parts: [{ text: message.trim() }] });
+
+  const payload = {
+    system_instruction: {
+      parts: [{ text: character.systemPrompt }],
+    },
+    contents,
+    generationConfig: {
+      temperature: 0.9,
+      maxOutputTokens: 200,
+    },
+  };
+
+  try {
+    const geminiRes = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!geminiRes.ok) {
+      const errBody = await geminiRes.text();
+      console.error("Gemini API error:", geminiRes.status, errBody);
+      return res.status(502).json({ error: "Error al comunicarse con la IA. Intenta nuevamente." });
+    }
+
+    const data = await geminiRes.json();
+    const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text || "").join("").trim();
+
+    if (!text) {
+      return res.status(502).json({ error: "La IA no devolvió una respuesta válida." });
+    }
+
+    return res.status(200).json({ reply: text });
+  } catch (err) {
+    console.error("Error inesperado en /api/chat:", err);
+    return res.status(500).json({ error: "Error interno del servidor." });
+  }
+}
