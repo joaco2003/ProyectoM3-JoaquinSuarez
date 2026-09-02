@@ -18,7 +18,7 @@ Podés elegir el personaje desde `/home` y el chat recuerda tu selección.
 
 ## Link del repositorio
 
-Abrir `https://github.com/joaco2003/ProyectoM3-JoaquinSuarez`
+Abrir https://github.com/joaco2003/ProyectoM3-JoaquinSuarez
 
 ## Estructura del proyecto
 
