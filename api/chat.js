@@ -1,11 +1,27 @@
-// /api/chat.js
-// Vercel Serverless Function: actúa como proxy seguro entre el cliente y la
-// API de Google Gemini. La API key vive solo en variables de entorno del
-// servidor y nunca se expone al navegador.
 
 import { CHARACTERS } from "../src/js/characters.js";
 
-const DEFAULT_MODEL = "gemini-2.0-flash";
+const DEFAULT_MODEL = "gemini-3.6-flash";
+
+async function callGeminiWithRetry(url, payload, maxRetries = 3) {
+  let lastRes;
+
+  for (let i = 0; i < maxRetries; i++) {
+    lastRes = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (lastRes.ok) return lastRes;
+    if (lastRes.status !== 503) return lastRes; // si es otro error, no reintentar
+
+    console.log(`Intento ${i + 1} falló con 503 (modelo saturado), reintentando...`);
+    await new Promise((r) => setTimeout(r, 1000 * (i + 1))); // espera 1s, 2s, 3s
+  }
+
+  return lastRes; // se agotaron los reintentos, devolvemos el último intento (fallido)
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -45,21 +61,24 @@ export default async function handler(req, res) {
     },
     contents,
     generationConfig: {
-      temperature: 0.9,
-      maxOutputTokens: 200,
+      maxOutputTokens: 500,
+      thinkingConfig: {
+        thinkingLevel: "low",
+      },
     },
   };
 
   try {
-    const geminiRes = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const geminiRes = await callGeminiWithRetry(url, payload);
 
     if (!geminiRes.ok) {
       const errBody = await geminiRes.text();
       console.error("Gemini API error:", geminiRes.status, errBody);
+
+      if (geminiRes.status === 503) {
+        return res.status(503).json({ error: "La IA está muy solicitada ahora mismo. Probá de nuevo en unos segundos." });
+      }
+
       return res.status(502).json({ error: "Error al comunicarse con la IA. Intenta nuevamente." });
     }
 

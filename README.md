@@ -16,6 +16,10 @@ La app incluye una galería con 3 personajes, cada uno con su propio system prom
 
 Podés elegir el personaje desde `/home` y el chat recuerda tu selección.
 
+## Link del repositorio
+
+Abrir `https://github.com/joaco2003/ProyectoM3-JoaquinSuarez`
+
 ## Estructura del proyecto
 
 ```
@@ -63,7 +67,7 @@ comicsanscon-chat/
    ```bash
    vercel dev
    ```
-4. Abrir `http://localhost:3000` (o el puerto que indique la CLI).
+4. Abrir `http://localhost:3000/home` (o el puerto que indique la CLI).
 
 > **Nota:** el frontend nunca ve la API key. Todo el llamado a Gemini pasa por
 > `/api/chat.js`, que corre en el servidor y lee `process.env.GEMINI_API_KEY`.
@@ -101,12 +105,13 @@ npm run test:watch
    chat responde sin exponer la key en las DevTools → Network.
 
 **URL de la app desplegada:** _completar con el link real una vez deployado_
-(`https://tu-proyecto.vercel.app`)
+(`https://vercel.com/joaquins-projects-d1206c04/proyecto-m3-joaquin-suarez`)
 
 ## Capturas de pantalla
 
-_Agregar acá capturas de `/home`, `/chat` (con conversación) y `/about`, en
-mobile y desktop, una vez corrido el proyecto localmente o en producción._
+![Chat con Naruto](img/naruto.png)
+![Chat con sherlock](img/sherlock.png)
+![Chat con homero](img/homero.png)
 
 ## Registro de uso de IA en el proyecto
 
