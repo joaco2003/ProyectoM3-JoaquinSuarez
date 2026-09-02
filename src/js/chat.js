@@ -1,13 +1,6 @@
-// chat.js
-// Lógica específica del chat: llamada a nuestra serverless function y
-// manejo del estado de una conversación en memoria.
 
 import { buildChatRequestBody } from "./utils.js";
 
-/**
- * Envía un mensaje a /api/chat y devuelve la respuesta del personaje.
- * Lanza un Error con un mensaje amigable si algo falla (red o servidor).
- */
 export async function sendMessageToCharacter(characterId, history, message) {
   const body = buildChatRequestBody(characterId, history, message);
 

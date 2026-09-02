@@ -1,6 +1,4 @@
 // utils.js
-// Funciones puras de transformación/parseo. Sin acceso a DOM ni red directa,
-// para que sean fáciles de testear con Vitest.
 
 /**
  * Construye el body que el cliente envía a nuestra propia serverless function.
@@ -48,9 +46,7 @@ export function toGeminiContents(history, newMessage) {
   return contents;
 }
 
-/**
- * Formatea un timestamp (ms epoch) como hora corta legible, ej "14:35".
- */
+
 export function formatTimestamp(ms) {
   const d = new Date(ms);
   const hh = String(d.getHours()).padStart(2, "0");
@@ -58,9 +54,6 @@ export function formatTimestamp(ms) {
   return `${hh}:${mm}`;
 }
 
-/**
- * Crea un objeto de mensaje normalizado para guardar en el historial.
- */
 export function createMessage(role, text) {
   return {
     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,

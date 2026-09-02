@@ -1,5 +1,5 @@
 // app.js
-// Router SPA (History API) + renderizado de vistas + orquestación del chat.
+
 
 import { CHARACTERS, getCharacterById } from "./characters.js";
 import { createMessage, formatTimestamp, parseRoute } from "./utils.js";

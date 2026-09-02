@@ -1,7 +1,5 @@
 // storage.js
-// Persistencia del historial de chat en localStorage (extra credit).
-// Todas las funciones son defensivas: si localStorage no está disponible
-// (SSR, modo privado, etc.) fallan en silencio en vez de romper la app.
+
 
 const STORAGE_PREFIX = "comicsanscon:chat:";
 
