@@ -4,7 +4,6 @@
   "description": "POC: chatea con personajes ficticios usando Gemini AI - ComicSansCon",
   "type": "module",
   "scripts": {
-    "dev": "vercel dev",
     "test": "vitest run",
     "test:watch": "vitest"
   },
