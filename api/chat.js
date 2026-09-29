@@ -78,7 +78,11 @@ export default async function handler(req, res) {
       if (geminiRes.status === 503) {
         return res.status(503).json({ error: "La IA está muy solicitada ahora mismo. Probá de nuevo en unos segundos." });
       }
-
+      if (geminiRes.status === 429) {
+        return res.status(429).json({
+          error: "Se alcanzó el límite de uso de la IA. Esperá un minuto y volvé a intentar.",
+        });
+      }
       return res.status(502).json({ error: "Error al comunicarse con la IA. Intenta nuevamente." });
     }
 
