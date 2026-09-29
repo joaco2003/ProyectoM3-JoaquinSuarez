@@ -30,7 +30,6 @@ describe("sendMessageToCharacter", () => {
 
     const [, options] = global.fetch.mock.calls[0];
     const sentBody = JSON.parse(options.body);
-    expect(sentBody.characterId).toBe("yoda");
     expect(sentBody.characterId).toBe("naruto");
     expect(sentBody.history).toEqual([{ role: "user", text: "Hola" }]);
   });
