@@ -4,6 +4,10 @@ Prueba de concepto (POC) de una Single Page Application donde el usuario puede
 chatear con personajes ficticios usando **Google Gemini AI**, desarrollada como
 ejercicio de frontend junior para la agencia **ComicSansCon**.
 
+🔗 **Demo en producción:** https://proyecto-m3-joaquin-suarez.vercel.app/home
+
+📦 **Repositorio:** [github.com/joaco2003/ProyectoM3-JoaquinSuarez](https://github.com/joaco2003/ProyectoM3-JoaquinSuarez)
+
 ## Personajes disponibles
 
 La app incluye una galería con 3 personajes, cada uno con su propio system prompt:
@@ -16,16 +20,13 @@ La app incluye una galería con 3 personajes, cada uno con su propio system prom
 
 Podés elegir el personaje desde `/home` y el chat recuerda tu selección.
 
-## Link del repositorio
-
-Abrir https://github.com/joaco2003/ProyectoM3-JoaquinSuarez
-
 ## Estructura del proyecto
 
 ```
 comicsanscon-chat/
 ├── api/
 │   └── chat.js            # Vercel Serverless Function: proxy seguro hacia Gemini
+├── img/                   # Imágenes de los personajes y capturas
 ├── src/
 │   ├── index.html
 │   ├── css/
@@ -42,6 +43,7 @@ comicsanscon-chat/
 ├── .env.example
 ├── .gitignore
 ├── package.json
+├── README.md
 └── vercel.json
 ```
 
@@ -51,6 +53,13 @@ comicsanscon-chat/
 - Una API key de Google Gemini: https://aistudio.google.com/app/apikey
 - [Vercel CLI](https://vercel.com/docs/cli) (`npm i -g vercel`) para correr `vercel dev` localmente
 
+## Variables de entorno
+
+| Variable | Obligatoria | Descripción |
+|---|---|---|
+| `GEMINI_API_KEY` | Sí | Tu API key de Google Gemini |
+| `GEMINI_MODEL` | No | Modelo a usar. Por defecto: `gemini-3.6-flash` |
+
 ## Cómo correr el proyecto localmente
 
 1. Instalar dependencias:
@@ -59,8 +68,8 @@ comicsanscon-chat/
    ```
 2. Copiar el archivo de variables de entorno y completar tu API key real:
    ```bash
-   cp .env.example .env
-   # editar .env y pegar tu GEMINI_API_KEY
+   cp .env.example .env.local
+   # editar .env.local y pegar tu GEMINI_API_KEY
    ```
 3. Levantar el entorno de desarrollo (sirve tanto el frontend estático como las
    funciones serverless de `/api`):
@@ -78,7 +87,8 @@ comicsanscon-chat/
 npm test
 ```
 
-Esto ejecuta Vitest en modo `run` sobre todo `tests/`. Hay tests para:
+Esto ejecuta Vitest en modo `run` sobre todo `tests/` (22 tests en 2 archivos).
+Hay tests para:
 
 - `utils.js`: construcción del body de la petición, parseo de la respuesta de
   Gemini, formateo de timestamps, parseo de rutas, truncado de texto.
@@ -97,21 +107,41 @@ npm run test:watch
 2. En [vercel.com](https://vercel.com), **Add New Project** → importar el repo.
 3. En **Environment Variables**, agregar:
    - `GEMINI_API_KEY` = tu clave real
-   - `GEMINI_MODEL` (opcional, ej. `gemini-2.0-flash`)
+   - `GEMINI_MODEL` (opcional, por defecto `gemini-3.6-flash`)
 4. Deploy. Vercel detecta automáticamente `/api/chat.js` como función
    serverless y `src/` como el sitio estático (configurado en `vercel.json`).
+   Si agregás o cambiás variables de entorno después, hay que hacer un
+   **Redeploy** para que apliquen.
 5. Verificar en producción que `/home`, `/chat` y `/about` cargan bien al
    navegar directo por URL (gracias a los rewrites de `vercel.json`), y que el
    chat responde sin exponer la key en las DevTools → Network.
 
-**URL de la app desplegada:** _completar con el link real una vez deployado_
-(`https://vercel.com/joaquins-projects-d1206c04/proyecto-m3-joaquin-suarez`)
+**URL de la app desplegada:** https://proyecto-m3-joaquin-suarez.vercel.app/home
+
+> **Nota sobre límites de uso:** la app usa el plan gratuito de Gemini, que
+> tiene un tope de peticiones por minuto. Si aparece el mensaje *"Se alcanzó
+> el límite de uso de la IA"* (error 429), esperá un minuto y volvé a
+> intentar. Si el modelo está saturado (error 503), el servidor reintenta
+> automáticamente hasta 3 veces antes de mostrar un error.
+
+## Manejo de errores de la API
+
+`/api/chat` valida la entrada y devuelve mensajes claros:
+
+| Status | Causa |
+|---|---|
+| `400` | Faltan campos (`characterId`, `message`) o el personaje no existe |
+| `405` | Método distinto de `POST` |
+| `429` | Se superó el límite de uso de Gemini |
+| `502` | Error al comunicarse con la IA o respuesta vacía |
+| `503` | Modelo saturado (tras 3 reintentos) |
+| `500` | Falta la API key en el servidor o error interno |
 
 ## Capturas de pantalla
 
 ![Chat con Naruto](img/naruto.png)
-![Chat con sherlock](img/sherlock.png)
-![Chat con homero](img/homero.png)
+![Chat con Sherlock](img/sherlock.png)
+![Chat con Homero](img/homero.png)
 
 ## Registro de uso de IA en el proyecto
 
@@ -122,6 +152,8 @@ el desarrollo, específicamente para:
 - Redactar y afinar los 3 system prompts (tono, límites, longitud de respuesta).
 - Revisar accesibilidad y breakpoints del CSS responsive.
 - Generar el set inicial de tests unitarios con Vitest.
+- Depurar el despliegue en Vercel (variables de entorno) y revisar el manejo
+  de errores del backend (reintentos en 503 y mensaje para 429).
 
 Todo el código generado fue revisado, entendido y ajustado manualmente antes
 de integrarlo al proyecto final.
